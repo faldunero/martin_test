@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Martín Goyco</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #fcfcfc;
+            --primary: #1a1a1a;
+            --accent: #3e845f;
+            --border: #e0e0e0;
+            --text-main: #111111;
+            --text-muted: #777777;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 700px; width: 100%; }
+        h1 { text-align: center; font-size: 1.1rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+
+        /* Formulario Limpio */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .full { grid-column: span 2; }
+        label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1px; }
+        input, select {
+            width: 100%; padding: 12px 0; border: none; border-bottom: 1px solid var(--border);
+            font-size: 1rem; background: transparent; outline: none; transition: border 0.3s;
+        }
+        input:focus { border-bottom-color: var(--primary); }
+
+        /* Línea de Elección Minimalista */
+        .q-block { margin-bottom: 50px; }
+        .q-text { font-size: 1.05rem; margin-bottom: 25px; display: block; font-weight: 500; }
+        
+        .slider-wrap { display: flex; align-items: center; gap: 20px; }
+        .slider {
+            -webkit-appearance: none; flex-grow: 1; height: 2px; background: #e0e0e0; outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px; background: var(--primary);
+            border-radius: 50%; cursor: pointer; border: none;
+        }
+
+        /* Número con tamaño similar al texto */
+        .val-display { font-size: 1rem; font-weight: 700; color: var(--primary); width: 20px; text-align: right; }
+
+        /* Dashboard de Alto Impacto */
+        .db-header { display: flex; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+        .stat-box { flex: 1; padding: 20px; text-align: center; border-right: 1px solid var(--border); }
+        .stat-box:last-child { border-right: none; }
+        .stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
+        .stat-val { font-size: 1rem; font-weight: 700; }
+
+        .report-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+        
+        /* Gráfico de Barras Potente */
+        .chart-container { background: #fff; padding: 20px; border: 1px solid var(--border); }
+        .chart-v { display: flex; align-items: flex-end; height: 160px; gap: 20px; justify-content: center; }
+        .bar-v { width: 40px; background: var(--primary); position: relative; transition: height 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+        .bar-v span { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 800; }
+        .bar-tag { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 10px; }
+
+        .analysis-txt { font-size: 0.9rem; line-height: 1.7; color: #333; }
+        .analysis-txt strong { display: block; margin-bottom: 10px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+
+        /* Comparativa */
+        .comp-footer { grid-column: span 2; margin-top: 20px; }
+        .comp-track { height: 4px; background: #f0f0f0; position: relative; margin: 15px 0; border-radius: 2px; }
+        .comp-user { height: 100%; background: var(--accent); width: 0%; transition: width 1s; border-radius: 2px; }
+        .comp-avg { position: absolute; top: -6px; height: 16px; width: 2px; background: #ff4444; left: 65%; }
+
+        .hidden { display: none; }
+        .btn {
+            background: var(--primary); color: white; padding: 18px; border: none; border-radius: 2px;
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        .btn:hover { letter-spacing: 3px; background: #000; }
+        .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border); margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Test de Martín Goyco</h1>
+
+    <div id="step-1" class="card">
+        <div class="form-grid">
+            <div class="full"><label>Nombre</label><input type="text" id="reg-name" placeholder="Escriba aquí"></div>
+            <div><label>Edad</label><input type="number" id="reg-age" placeholder="00"></div>
+            <div><label>Género</label><select id="reg-gender"><option>Masculino</option><option>Femenino</option></select></div>
+            <div class="full"><label>Contextura Física</label><select id="reg-physique"><option>Ectomorfo</option><option>Mesomorfo</option><option>Endomorfo</option></select></div>
+        </div>
+        <button class="btn" style="margin-top:40px" onclick="nextStep()">Comenzar Evaluación</button>
+    </div>
+
+    <div id="step-2" class="hidden">
+        <div class="card" id="q-container"></div>
+        <button id="btn-next-page" class="btn" onclick="nextPage()">Siguiente Página</button>
+        <button id="btn-final" class="btn hidden" onclick="generateDashboard()">Finalizar y Generar Informe</button>
+    </div>
+
+    <div id="step-3" class="hidden">
+        <div class="card">
+            <h1>Resultado del Informe</h1>
+            
+            <div class="db-header">
+                <div class="stat-box"><span class="stat-label">Perfil</span><span id="db-name" class="stat-val">-</span></div>
+                <div class="stat-box"><span class="stat-label">Edad/Sexo</span><span id="db-bio" class="stat-val">-</span></div>
+                <div class="stat-box"><span class="stat-label">Biotipo</span><span id="db-phy" class="stat-val">-</span></div>
+            </div>
+
+            <div class="report-section">
+                <div class="analysis-txt">
+                    <strong>Evaluación Cualitativa</strong>
+                    El puntaje obtenido sugiere una alta capacidad de respuesta ante estímulos técnicos y una estructura mental orientada a la eficiencia operativa. No se observan desviaciones significativas en la lógica de procesos.
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-v">
+                        <div class="bar-v" id="bv-1" style="height: 0%"><span id="bv-1-t">0%</span></div>
+                        <div class="bar-v" id="bv-2" style="height: 0%; opacity: 0.6"><span id="bv-2-t">0%</span></div>
+                        <div class="bar-v" id="bv-3" style="height: 0%; opacity: 0.3"><span id="bv-3-t">0%</span></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; margin-top:5px;">
+                        <span class="bar-tag">DETALLE</span><span class="bar-tag">LÓGICA</span><span class="bar-tag">ORDEN</span>
+                    </div>
+                </div>
+
+                <div class="comp-footer">
+                    <label>Puntuación Global vs Media Población</label>
+                    <div class="comp-track">
+                        <div id="user-bar" class="comp-user"></div>
+                        <div class="comp-avg"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; font-weight:800; color: var(--text-muted);">
+                        <span>TU SCORE</span>
+                        <span style="color:#ff4444">PROMEDIO (65%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-outline" onclick="location.reload()">Nueva Evaluación</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        "¿Priorizas la exactitud técnica en cada entrega?", "¿Detectas incoherencias con rapidez?", 
+        "¿Mantienes estándares de calidad bajo presión?", "¿Sigues procesos estructurados?", 
+        "¿Tu entorno de trabajo es ordenado?", "¿Planificas con antelación tus tareas?", 
+        "¿Prefieres la objetividad a la intuición?", "¿Revisas tu trabajo más de una vez?", 
+        "¿Te adaptas a nuevas metodologías?", "¿Consideras la eficiencia como prioridad?"
+    ];
+
+    let currentPage = 1;
+
+    function renderQuestions() {
+        const container = document.getElementById('q-container');
+        container.innerHTML = '';
+        const start = (currentPage - 1) * 5;
+        for (let i = start; i < start + 5; i++) {
+            container.innerHTML += `
+                <div class="q-block">
+                    <span class="q-text">${i + 1}. ${questions[i]}</span>
+                    <div class="slider-wrap">
+                        <input type="range" min="1" max="5" value="3" class="slider q-input" 
+                               oninput="this.nextElementSibling.innerText = this.value">
+                        <div class="val-display">3</div>
+                    </div>
+                </div>`;
+        }
+    }
+
+    function nextPage() { currentPage = 2; renderQuestions(); document.getElementById('btn-next-page').classList.add('hidden'); document.getElementById('btn-final').classList.remove('hidden'); window.scrollTo(0,0); }
+
+    function nextStep() { 
+        if(!document.getElementById('reg-name').value) return alert("Ingrese nombre");
+        document.getElementById('step-1').classList.add('hidden'); 
+        document.getElementById('step-2').classList.remove('hidden'); 
+        renderQuestions(); 
+    }
+
+    function generateDashboard() {
+        let total = 0;
+        document.querySelectorAll('.q-input').forEach(i => total += parseInt(i.value));
+        const score = (total / 50) * 100;
+
+        document.getElementById('db-name').innerText = document.getElementById('reg-name').value.split(' ')[0];
+        document.getElementById('db-bio').innerText = document.getElementById('reg-age').value + ' / ' + document.getElementById('reg-gender').value[0];
+        document.getElementById('db-phy').innerText = document.getElementById('reg-physique').value;
+
+        document.getElementById('step-2').classList.add('hidden');
+        document.getElementById('step-3').classList.remove('hidden');
+
+        setTimeout(() => {
+            document.getElementById('user-bar').style.width = score + '%';
+            document.getElementById('bv-1').style.height = score + '%';
+            document.getElementById('bv-1-t').innerText = Math.round(score) + '%';
+            document.getElementById('bv-2').style.height = (score * 0.8) + '%';
+            document.getElementById('bv-2-t').innerText = Math.round(score * 0.8) + '%';
+            document.getElementById('bv-3').style.height = (score * 0.9) + '%';
+            document.getElementById('bv-3-t').innerText = Math.round(score * 0.9) + '%';
+        }, 100);
+    }
+</script>
+</body>
+</html>
