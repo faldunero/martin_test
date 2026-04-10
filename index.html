@@ -2,227 +2,452 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test de Martín Goyco</title>
+    <title>PMP Simulator Pro | Executive Training</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --bg: #ffffff;
-            --surface: #fcfcfc;
-            --primary: #1a1a1a;
-            --accent: #3e845f;
-            --border: #e0e0e0;
-            --text-main: #111111;
-            --text-muted: #777777;
+        :root { 
+            --pmi-blue: #0f172a; --accent: #2563eb; --success: #10b981; 
+            --error: #ef4444; --bg: #f8fafc; --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); margin: 0; display: flex; justify-content: center; padding: 40px 20px; color: #1e293b; }
+        .main-container { width: 100%; max-width: 950px; background: white; border-radius: 32px; padding: 60px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
-            line-height: 1.5;
-        }
+        .screen { display: none; }
+        .active { display: block; }
 
-        .container { max-width: 700px; width: 100%; }
-        h1 { text-align: center; font-size: 1.1rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 50px; }
+        /* Auth UI */
+        .auth-form { max-width: 450px; margin: 0 auto; }
+        .auth-input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 1rem; outline: none; }
+        .auth-links { margin-top: 20px; text-align: center; font-size: 0.9rem; color: #64748b; }
+        .auth-links a { color: var(--accent); text-decoration: none; font-weight: 600; cursor: pointer; margin: 0 5px; }
 
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 40px;
-            margin-bottom: 24px;
-        }
-
-        /* Formulario Limpio */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .full { grid-column: span 2; }
-        label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1px; }
-        input, select {
-            width: 100%; padding: 12px 0; border: none; border-bottom: 1px solid var(--border);
-            font-size: 1rem; background: transparent; outline: none; transition: border 0.3s;
-        }
-        input:focus { border-bottom-color: var(--primary); }
-
-        /* Línea de Elección Minimalista */
-        .q-block { margin-bottom: 50px; }
-        .q-text { font-size: 1.05rem; margin-bottom: 25px; display: block; font-weight: 500; }
+        /* General UI */
+        h1 { font-size: 3rem; font-weight: 800; color: var(--pmi-blue); text-align: center; letter-spacing: -0.04em; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #64748b; font-size: 1.2rem; margin-bottom: 30px; }
+        .disclaimer-elegant { background: #f1f5f9; border-radius: 16px; padding: 25px; margin-bottom: 35px; border: 1px solid #e2e8f0; text-align: center; font-size: 0.95rem; line-height: 1.6; color: #475569; }
         
-        .slider-wrap { display: flex; align-items: center; gap: 20px; }
-        .slider {
-            -webkit-appearance: none; flex-grow: 1; height: 2px; background: #e0e0e0; outline: none;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 14px; height: 14px; background: var(--primary);
-            border-radius: 50%; cursor: pointer; border: none;
-        }
+        /* Botones y Grilla */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+        .btn-option { background: white; border: 1.5px solid #e2e8f0; padding: 20px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-option:hover { border-color: var(--accent); background: #f0f7ff; color: var(--accent); }
+        .btn-featured { width: 100%; background: var(--pmi-blue); color: white; border: none; font-size: 1.1rem; padding: 24px; border-radius: 16px; cursor: pointer; font-weight: 700; }
+        .btn-cancel { background: transparent; color: #64748b; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-        /* Número con tamaño similar al texto */
-        .val-display { font-size: 1rem; font-weight: 700; color: var(--primary); width: 20px; text-align: right; }
+        /* Quiz UI */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .timer-pill { background: #f1f5f9; padding: 8px 16px; border-radius: 100px; font-weight: 700; font-family: monospace; }
+        .progress-rail { width: 100%; height: 6px; background: #f1f5f9; border-radius: 10px; margin-bottom: 40px; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 10px; transition: 0.5s; width: 0%; }
+        .question-text { font-size: 1.6rem; font-weight: 600; color: #0f172a; margin-bottom: 40px; }
+        .ans-card { border: 1.5px solid #e2e8f0; padding: 22px; border-radius: 18px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .ans-card.selected { border-color: var(--accent); background: #eff6ff; color: var(--accent); font-weight: 600; }
 
-        /* Dashboard de Alto Impacto */
-        .db-header { display: flex; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-        .stat-box { flex: 1; padding: 20px; text-align: center; border-right: 1px solid var(--border); }
-        .stat-box:last-child { border-right: none; }
-        .stat-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
-        .stat-val { font-size: 1rem; font-weight: 700; }
-
-        .report-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-        
-        /* Gráfico de Barras Potente */
-        .chart-container { background: #fff; padding: 20px; border: 1px solid var(--border); }
-        .chart-v { display: flex; align-items: flex-end; height: 160px; gap: 20px; justify-content: center; }
-        .bar-v { width: 40px; background: var(--primary); position: relative; transition: height 1.2s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-        .bar-v span { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 800; }
-        .bar-tag { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-align: center; margin-top: 10px; }
-
-        .analysis-txt { font-size: 0.9rem; line-height: 1.7; color: #333; }
-        .analysis-txt strong { display: block; margin-bottom: 10px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-
-        /* Comparativa */
-        .comp-footer { grid-column: span 2; margin-top: 20px; }
-        .comp-track { height: 4px; background: #f0f0f0; position: relative; margin: 15px 0; border-radius: 2px; }
-        .comp-user { height: 100%; background: var(--accent); width: 0%; transition: width 1s; border-radius: 2px; }
-        .comp-avg { position: absolute; top: -6px; height: 16px; width: 2px; background: #ff4444; left: 65%; }
-
-        .hidden { display: none; }
-        .btn {
-            background: var(--primary); color: white; padding: 18px; border: none; border-radius: 2px;
-            font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-            cursor: pointer; width: 100%; transition: 0.3s;
-        }
-        .btn:hover { letter-spacing: 3px; background: #000; }
-        .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border); margin-top: 15px; }
+        /* INFORME MINIMALISTA */
+        .minimal-report-item { padding: 30px 0; border-bottom: 1px solid #f1f5f9; }
+        .minimal-report-item:last-child { border-bottom: none; }
+        .rep-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .rep-status { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        .rep-question { font-size: 1.2rem; font-weight: 600; line-height: 1.5; color: var(--pmi-blue); margin-bottom: 15px; }
+        .rep-answers { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9rem; margin-bottom: 15px; }
+        .rep-label { font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.7rem; display: block; margin-bottom: 4px; }
+        .rep-tags { display: flex; gap: 8px; margin-bottom: 15px; }
+        .rep-tag-item { font-size: 0.7rem; font-weight: 700; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; color: #64748b; }
+        .rep-explanation { font-size: 0.95rem; line-height: 1.6; color: #64748b; padding-left: 20px; border-left: 2px solid #f1f5f9; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Test de Martín Goyco</h1>
+<div class="main-container">
 
-    <div id="step-1" class="card">
-        <div class="form-grid">
-            <div class="full"><label>Nombre</label><input type="text" id="reg-name" placeholder="Escriba aquí"></div>
-            <div><label>Edad</label><input type="number" id="reg-age" placeholder="00"></div>
-            <div><label>Género</label><select id="reg-gender"><option>Masculino</option><option>Femenino</option></select></div>
-            <div class="full"><label>Contextura Física</label><select id="reg-physique"><option>Ectomorfo</option><option>Mesomorfo</option><option>Endomorfo</option></select></div>
+    <div id="screen-login" class="screen">
+        <h1>PMP Simulator Pro</h1>
+        <p class="subtitle">Simulador de práctica basado en estándares PMI</p>
+         <div class="disclaimer-elegant">
+            Este simulador NO corresponde a un examen oficial del PMI®. Es una herramienta de entrenamiento diseñada para reforzar conocimientos y familiarizarte con el formato del examen PMP®.
         </div>
-        <button class="btn" style="margin-top:40px" onclick="nextStep()">Comenzar Evaluación</button>
+        <div class="auth-form">
+            <input type="email" id="login-email" class="auth-input" placeholder="Correo electrónico">
+            <input type="password" id="login-pass" class="auth-input" placeholder="Contraseña">
+            <button class="btn-featured" onclick="handleLogin()">Acceder</button>
+            <div class="auth-links">
+                <a onclick="navigate('screen-register')">Crear cuenta</a> | 
+                <a onclick="handleResetPassword()">Recuperar contraseña</a>
+            </div>
+        </div>
     </div>
 
-    <div id="step-2" class="hidden">
-        <div class="card" id="q-container"></div>
-        <button id="btn-next-page" class="btn" onclick="nextPage()">Siguiente Página</button>
-        <button id="btn-final" class="btn hidden" onclick="generateDashboard()">Finalizar y Generar Informe</button>
+    <div id="screen-register" class="screen">
+        <h1>Registro Profesional</h1>
+        <div class="auth-form">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="reg-nombre" class="auth-input" placeholder="Nombre">
+                <input type="text" id="reg-apellido" class="auth-input" placeholder="Apellido">
+            </div>
+            <input type="email" id="reg-email" class="auth-input" placeholder="Email">
+            <input type="password" id="reg-pass" class="auth-input" placeholder="Contraseña">
+            <input type="password" id="reg-pass-confirm" class="auth-input" placeholder="Confirmar contraseña">
+            <button class="btn-featured" onclick="handleRegister()">Registrarme</button>
+            <div class="auth-links"><a onclick="navigate('screen-login')">Volver al inicio</a></div>
+        </div>
     </div>
 
-    <div id="step-3" class="hidden">
-        <div class="card">
-            <h1>Resultado del Informe</h1>
+    <div id="screen-instructions" class="screen">
+        <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
+          <button onclick="cerrarSesion()" style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: 600; font-size: 1rem; padding: 10px; font-family: 'Inter', sans-serif;">Cerrar Sesión</button>
+        </div>
+        <h1>Instrucciones Generales</h1>
+        <div class="disclaimer-elegant">Metodología basada en la Guía del PMBOK® y el ECO vigente.</div>
+        
+        <div style="max-width: 700px; margin: 0 auto 40px auto; text-align: left; line-height: 1.6; color: #475569;">
+            <div style="margin-bottom: 20px;">
+                <strong style="color: var(--pmi-blue); display: block; margin-bottom: 5px;">1. Estructura y Enfoque</strong>
+                <span>Preguntas basadas en los dominios de Personas, Procesos y Entorno, cubriendo enfoques predictivos, ágiles e híbridos.</span>
+            </div>
             
-            <div class="db-header">
-                <div class="stat-box"><span class="stat-label">Perfil</span><span id="db-name" class="stat-val">-</span></div>
-                <div class="stat-box"><span class="stat-label">Edad/Sexo</span><span id="db-bio" class="stat-val">-</span></div>
-                <div class="stat-box"><span class="stat-label">Biotipo</span><span id="db-phy" class="stat-val">-</span></div>
+            <div style="margin-bottom: 20px;">
+                <strong style="color: var(--pmi-blue); display: block; margin-bottom: 5px;">2. Tiempo y Descansos</strong>
+                <span>Cronómetro integrado en la barra superior. En sesiones largas, se activarán descansos automáticos de 10 minutos (preguntas 80 hasta exámen completo).</span>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <strong style="color: var(--pmi-blue); display: block; margin-bottom: 5px;">3. Navegación y Progreso</strong>
+                <span>Puedes retroceder para revisar tus respuestas. El sistema guarda tu progreso automáticamente si cierras la sesión accidentalmente.</span>
             </div>
 
-            <div class="report-section">
-                <div class="analysis-txt">
-                    <strong>Evaluación Cualitativa</strong>
-                    El puntaje obtenido sugiere una alta capacidad de respuesta ante estímulos técnicos y una estructura mental orientada a la eficiencia operativa. No se observan desviaciones significativas en la lógica de procesos.
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-v">
-                        <div class="bar-v" id="bv-1" style="height: 0%"><span id="bv-1-t">0%</span></div>
-                        <div class="bar-v" id="bv-2" style="height: 0%; opacity: 0.6"><span id="bv-2-t">0%</span></div>
-                        <div class="bar-v" id="bv-3" style="height: 0%; opacity: 0.3"><span id="bv-3-t">0%</span></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-around; margin-top:5px;">
-                        <span class="bar-tag">DETALLE</span><span class="bar-tag">LÓGICA</span><span class="bar-tag">ORDEN</span>
-                    </div>
-                </div>
-
-                <div class="comp-footer">
-                    <label>Puntuación Global vs Media Población</label>
-                    <div class="comp-track">
-                        <div id="user-bar" class="comp-user"></div>
-                        <div class="comp-avg"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; font-weight:800; color: var(--text-muted);">
-                        <span>TU SCORE</span>
-                        <span style="color:#ff4444">PROMEDIO (65%)</span>
-                    </div>
-                </div>
+            <div style="margin-bottom: 20px;">
+                <strong style="color: var(--pmi-blue); display: block; margin-bottom: 5px;">4. Resultados Detallados</strong>
+                <span>Al finalizar, obtendrás un análisis por dominio ECO y la justificación técnica de cada respuesta correcta.</span>
             </div>
-
-            <button class="btn btn-outline" onclick="location.reload()">Nueva Evaluación</button>
         </div>
+
+        <button class="btn-featured" onclick="navigate('screen-selection')">Aceptar y Elegir Test</button>
+    </div>
+
+    <div id="screen-selection" class="screen">
+        <div style="display: flex; justify-content: flex-end; width: 100%; margin-bottom: 10px;">
+            <button onclick="cerrarSesion()" style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: 600; font-size: 1rem; padding: 10px; font-family: 'Inter', sans-serif;">Cerrar Sesión</button>
+        </div>
+        <h1>Selecciona el test de tu interés.</h1>
+       <div class="instructions-section">
+    <ul class="instructions-list">
+        <li>Selecciona la cantidad de preguntas según tu objetivo de práctica.</li>
+        <li>Puedes elegir entre modo práctica o simulacro real.</li>
+        <li>Recibirás el feedback detallado únicamente al finalizar cada formato de test.</li>
+        <li>Lee cuidadosamente cada pregunta antes de responder.</li>
+        <li>Administra tu tiempo como en un examen real.</li>
+    </ul>
+
+    <div class="recommendation-banner">
+        Se recomienda alcanzar al menos un 70% de respuestas correctas.
     </div>
 </div>
 
+<style>
+    .instructions-section {
+        max-width: 800px;
+        margin: 20px auto 40px auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .instructions-list {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+    }
+
+    .instructions-list li {
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 12px;
+        color: #2c3e50;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    /* Punto azul de la lista */
+    .instructions-list li::before {
+        content: "•";
+        color: #3861fb; /* Azul de la captura */
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+        position: absolute;
+        left: 5px;
+        font-size: 1.2rem;
+    }
+
+    .recommendation-banner {
+        background-color: #ebfbf4; /* Verde muy claro */
+        border: 1px solid #d1f2e4;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        color: #1a5c40; /* Verde oscuro para el texto */
+        font-weight: 600;
+        font-size: 1.05rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+</style> 
+        
+        
+        
+        
+        <div class="menu-grid">
+            <button class="btn-option" onclick="empezar(20)">Práctica 20</button>
+            <button class="btn-option" onclick="empezar(40)">Práctica 40</button>
+            <button class="btn-option" onclick="empezar(60)">Práctica 60</button>
+            <button class="btn-option" onclick="empezar(80)">Práctica 80</button>
+            <button class="btn-option" onclick="empezar(100)">Práctica 100</button>
+            <button class="btn-option" onclick="empezar(120)">Práctica 120</button>
+            <button class="btn-option" onclick="empezar(140)">Práctica 140</button>
+            <button class="btn-featured" style="grid-column: 1 / -1; margin-top:10px;" onclick="empezar(180)">MODO EXAMEN COMPLETO (180)</button>
+        </div>
+
+        <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 20px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+            <a href="#" onclick="navigate('screen-instructions')" style="color: #64748b; text-decoration: none; font-size: 0.95rem; font-weight: 500;">← Volver al Set de Instrucciones</a>
+            <!--<button onclick="cerrarSesion()" style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: 600; font-size: 1rem; font-family: 'Inter', sans-serif;">Cerrar Sesión</button>-->
+        </div>
+    </div>
+
+    <div id="screen-quiz" class="screen">
+        <div class="top-bar">
+            <button class="btn-cancel" onclick="limpiarSesion()" style="color:#ef4444">Cancelar</button>
+            <div id="progreso-txt" style="font-weight: 800;">PREGUNTA 1</div>
+            <div class="timer-pill" id="reloj-digital">00:00:00</div>
+        </div>
+        <div class="progress-rail"><div class="progress-fill" id="p-bar"></div></div>
+        <div class="question-text" id="texto-enunciado">Cargando...</div>
+        <div id="contenedor-opciones"></div>
+        <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+            <button onclick="mover(-1)" style="padding: 15px 30px; border-radius: 12px; border: 1.5px solid #e2e8f0; cursor: pointer;">Anterior</button>
+            <button id="btn-next" onclick="mover(1)" style="padding: 15px 40px; border-radius: 12px; background: var(--accent); color: white; border: none; cursor: pointer; font-weight: 700;">Siguiente</button>
+        </div>
+    </div>
+
+    <div id="screen-break" class="screen" style="text-align: center;">
+        <h1>DESCANSO</h1>
+        <div id="break-clock" style="font-size: 5rem; font-weight: 800; color: var(--accent); margin: 30px 0;">10:00</div>
+        <button class="btn-featured" onclick="terminarBreak()">Reanudar ahora</button>
+    </div>
+
+    <div id="screen-report" class="screen">
+        <div style="text-align: center; margin-bottom: 50px;">
+            <h1 id="report-score" style="font-size: 6rem; margin: 0; color: #1e293b;">0%</h1>
+            <p id="report-meta" style="font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;"></p>
+        </div>
+
+        <div id="report-review"></div>
+
+        <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 15px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 30px;">
+            <button class="btn-featured" onclick="volverASeleccion()" style="width: 100%; max-width: 300px;">
+                Volver al Set de Preguntas
+           </button>
+               <button onclick="cerrarSesion()" style="background: none; border: none; cursor: pointer; color: #ef4444; font-weight: 600; font-size: 1rem; padding: 10px; font-family: 'Inter', sans-serif;">
+                Cerrar Sesión 
+            </button> 
+        </div>
+    </div>
+
+</div>
+
 <script>
-    const questions = [
-        "¿Priorizas la exactitud técnica en cada entrega?", "¿Detectas incoherencias con rapidez?", 
-        "¿Mantienes estándares de calidad bajo presión?", "¿Sigues procesos estructurados?", 
-        "¿Tu entorno de trabajo es ordenado?", "¿Planificas con antelación tus tareas?", 
-        "¿Prefieres la objetividad a la intuición?", "¿Revisas tu trabajo más de una vez?", 
-        "¿Te adaptas a nuevas metodologías?", "¿Consideras la eficiencia como prioridad?"
-    ];
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIjxMJ1837p-rN7Husua5jgVLr9MRi_Fg",
+        authDomain: "pmp-simulator-pro-c656a.firebaseapp.com",
+        projectId: "pmp-simulator-pro-c656a",
+        storageBucket: "pmp-simulator-pro-c656a.firebasestorage.app",
+        messagingSenderId: "574994878534",
+        appId: "1:574994878534:web:e9a98ac2d9e0ec85c73a47"
+    };
 
-    let currentPage = 1;
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const API_URL = "https://us-central1-pmp-simulator-pro-c656a.cloudfunctions.net/getQuestions";
 
-    function renderQuestions() {
-        const container = document.getElementById('q-container');
-        container.innerHTML = '';
-        const start = (currentPage - 1) * 5;
-        for (let i = start; i < start + 5; i++) {
-            container.innerHTML += `
-                <div class="q-block">
-                    <span class="q-text">${i + 1}. ${questions[i]}</span>
-                    <div class="slider-wrap">
-                        <input type="range" min="1" max="5" value="3" class="slider q-input" 
-                               oninput="this.nextElementSibling.innerText = this.value">
-                        <div class="val-display">3</div>
-                    </div>
-                </div>`;
+    let qSet = [], idx = 0, userChoices = {}, segs = 0, timer, bTimer, bSecs = 600;
+
+    function navigate(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            if (localStorage.getItem('pmp_test_activo') === "true") {
+                qSet = JSON.parse(localStorage.getItem('pmp_qSet'));
+                idx = parseInt(localStorage.getItem('pmp_idx')) || 0;
+                userChoices = JSON.parse(localStorage.getItem('pmp_userChoices')) || {};
+                segs = parseInt(localStorage.getItem('pmp_segs')) || 0;
+                navigate('screen-quiz');
+                iniciarReloj(); 
+                dibujar();
+            } else { 
+                navigate('screen-instructions'); 
+            }
+        } else { 
+            navigate('screen-login'); 
+        }
+    });
+
+    async function handleLogin() {
+        const e = document.getElementById('login-email').value;
+        const p = document.getElementById('login-pass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Credenciales inválidas"); }
+    }
+
+    async function handleRegister() {
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+        if(pass !== document.getElementById('reg-pass-confirm').value) return alert("Error en password");
+        try {
+            const cred = await auth.createUserWithEmailAndPassword(email, pass);
+            await db.collection('usuarios').doc(cred.user.uid).set({
+                nombre: document.getElementById('reg-nombre').value,
+                apellido: document.getElementById('reg-apellido').value,
+                email: email
+            });
+        } catch(e) { alert(e.message); }
+    }
+
+    async function handleResetPassword() {
+        const e = document.getElementById('login-email').value;
+        if(!e) return alert("Ingresa tu correo en el login primero.");
+        try { await auth.sendPasswordResetEmail(e); alert("Enlace de recuperación enviado."); } catch(err) { alert("Error al enviar."); }
+    }
+
+    async function empezar(n) {
+        navigate('screen-quiz');
+        document.getElementById('texto-enunciado').innerText = "Iniciando sesión...";
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            qSet = data.sort(() => 0.5 - Math.random()).slice(0, n);
+            localStorage.setItem('pmp_qSet', JSON.stringify(qSet));
+            localStorage.setItem('pmp_test_activo', "true");
+            idx = 0; segs = 0; userChoices = {};
+            iniciarReloj(); dibujar();
+        } catch(e) { alert("Error de conexión."); }
+    }
+
+    function iniciarReloj() {
+        if(timer) clearInterval(timer);
+        timer = setInterval(() => { 
+            segs++; 
+            localStorage.setItem('pmp_segs', segs);
+            document.getElementById('reloj-digital').innerText = new Date(segs * 1000).toISOString().substr(11, 8);
+        }, 1000);
+    }
+
+    function dibujar() {
+        const p = qSet[idx];
+        localStorage.setItem('pmp_idx', idx);
+        document.getElementById('texto-enunciado').innerText = p.enunciado;
+        document.getElementById('progreso-txt').innerText = `PREGUNTA ${idx+1} DE ${qSet.length}`;
+        document.getElementById('p-bar').style.width = `${((idx+1)/qSet.length)*100}%`;
+        const c = document.getElementById('contenedor-opciones');
+        c.innerHTML = '';
+        ['A', 'B', 'C', 'D'].forEach(l => {
+            if(p.opciones[l]) {
+                const d = document.createElement('div');
+                d.className = `ans-card ${userChoices[idx] === l ? 'selected' : ''}`;
+                d.innerText = `${l}. ${p.opciones[l]}`;
+                d.onclick = () => { userChoices[idx] = l; localStorage.setItem('pmp_userChoices', JSON.stringify(userChoices)); dibujar(); };
+                c.appendChild(d);
+            }
+        });
+        document.getElementById('btn-next').innerText = idx === qSet.length - 1 ? "Finalizar" : "Siguiente";
+    }
+
+    function mover(d) {
+       let nuevoIdx = idx + d;
+        if (nuevoIdx >= 0 && nuevoIdx < qSet.length) {
+            if (d === 1 && (nuevoIdx === 60 || nuevoIdx === 120)) {
+                idx = nuevoIdx;
+                iniciarBreak();
+            } else {
+                idx = nuevoIdx;
+                dibujar();
+            }
+        } 
+        else if (nuevoIdx >= qSet.length) {
+            finalizado();
         }
     }
 
-    function nextPage() { currentPage = 2; renderQuestions(); document.getElementById('btn-next-page').classList.add('hidden'); document.getElementById('btn-final').classList.remove('hidden'); window.scrollTo(0,0); }
-
-    function nextStep() { 
-        if(!document.getElementById('reg-name').value) return alert("Ingrese nombre");
-        document.getElementById('step-1').classList.add('hidden'); 
-        document.getElementById('step-2').classList.remove('hidden'); 
-        renderQuestions(); 
+    function iniciarBreak() { 
+        clearInterval(timer); 
+        navigate('screen-break'); 
+        bSecs = 600; 
+        document.getElementById('break-clock').innerText = "10:00";
+        bTimer = setInterval(() => { 
+            bSecs--; 
+            if(bSecs <= 0) {
+                terminarBreak();
+            } else {
+                let m = Math.floor(bSecs / 60);
+                let s = bSecs % 60;
+                document.getElementById('break-clock').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            }
+        }, 1000); 
     }
 
-    function generateDashboard() {
-        let total = 0;
-        document.querySelectorAll('.q-input').forEach(i => total += parseInt(i.value));
-        const score = (total / 50) * 100;
-
-        document.getElementById('db-name').innerText = document.getElementById('reg-name').value.split(' ')[0];
-        document.getElementById('db-bio').innerText = document.getElementById('reg-age').value + ' / ' + document.getElementById('reg-gender').value[0];
-        document.getElementById('db-phy').innerText = document.getElementById('reg-physique').value;
-
-        document.getElementById('step-2').classList.add('hidden');
-        document.getElementById('step-3').classList.remove('hidden');
-
-        setTimeout(() => {
-            document.getElementById('user-bar').style.width = score + '%';
-            document.getElementById('bv-1').style.height = score + '%';
-            document.getElementById('bv-1-t').innerText = Math.round(score) + '%';
-            document.getElementById('bv-2').style.height = (score * 0.8) + '%';
-            document.getElementById('bv-2-t').innerText = Math.round(score * 0.8) + '%';
-            document.getElementById('bv-3').style.height = (score * 0.9) + '%';
-            document.getElementById('bv-3-t').innerText = Math.round(score * 0.9) + '%';
-        }, 100);
+    function terminarBreak() { 
+        clearInterval(bTimer); 
+        navigate('screen-quiz'); 
+        iniciarReloj(); 
+        dibujar(); 
     }
+
+    function finalizado() {
+        clearInterval(timer);
+        localStorage.setItem('pmp_test_activo', "false");
+        navigate('screen-report');
+        let buenas = 0, html = '';
+        qSet.forEach((q, i) => {
+            const u = userChoices[i], ok = u === q.respuesta_correcta;
+            if(ok) buenas++;
+            html += `
+                <div class="minimal-report-item">
+                    <div class="rep-header">
+                        <span class="rep-status" style="color:${ok?'var(--success)':'var(--error)'}">P${i+1} • ${ok?'Correcta':'Incorrecta'}</span>
+                    </div>
+                    <div class="rep-question">${q.enunciado}</div>
+                    <div class="rep-answers">
+                        <div><span class="rep-label">Tu elección</span><span style="font-weight:700; color:${ok?'var(--success)':'var(--error)'}">${u || 'OMITIDA'}</span></div>
+                        <div><span class="rep-label">Respuesta Correcta</span><span style="font-weight:700; color:var(--success)">${q.respuesta_correcta}</span></div>
+                    </div>
+                    <div class="rep-tags">
+                        <span class="rep-tag-item">${q.Dominio_ECO || 'PROCESOS'}</span>
+                        <span class="rep-tag-item">${q.Enfoque || 'AGILE/PREDICTIVO'}</span>
+                    </div>
+                    <div class="rep-explanation">${q.Explicacion || 'Sin análisis adicional.'}</div>
+                </div>`;
+        });
+        document.getElementById('report-score').innerText = `${Math.round((buenas/qSet.length)*100)}%`;
+        document.getElementById('report-meta').innerText = `${buenas}/${qSet.length} CORRECTAS | TIEMPO: ${document.getElementById('reloj-digital').innerText}`;
+        document.getElementById('report-review').innerHTML = html;
+    }
+
+    function volverASeleccion() {
+        localStorage.removeItem('pmp_qSet');
+        localStorage.removeItem('pmp_idx');
+        localStorage.removeItem('pmp_userChoices');
+        localStorage.removeItem('pmp_segs');
+        localStorage.setItem('pmp_test_activo', "false");
+        navigate('screen-selection');
+    }
+
+    function cerrarSesion() { auth.signOut(); localStorage.clear(); location.reload(); }
+    function limpiarSesion() { if(confirm("¿Seguro que quieres cancelar? Perderás el progreso de este test.")) { localStorage.removeItem('pmp_test_activo'); location.reload(); } }
 </script>
 </body>
 </html>
